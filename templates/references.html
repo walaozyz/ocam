@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OCAM ID Reference</title>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f8;
+            color: #1f2933;
+        }
+
+        .page{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 36px 24px;
+        }
+
+        .panel{
+            background: #fff;
+            border: 1px solid #d8dee6;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 18px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, .08);
+        }
+
+        h1{
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        h2{
+            margin: 0;
+            font-size: 18px;
+        }
+
+        p{
+            margin: 0 0 16px;
+            line-height: 1.5;
+            color: #52616f;
+        }
+
+        .actions,
+        .section-head{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .actions{
+            justify-content: flex-start;
+        }
+
+        .button{
+            display: inline-block;
+            border-radius: 6px;
+            background: #146c94;
+            color: #fff;
+            padding: 10px 14px;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .button.secondary{
+            background: #334e68;
+        }
+
+        .button.light{
+            background: #e7edf3;
+            color: #102a43;
+        }
+
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+            font-size: 14px;
+        }
+
+        th,
+        td{
+            border-bottom: 1px solid #e5eaf0;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th{
+            background: #f7f9fb;
+            color: #334e68;
+        }
+
+        .id{
+            width: 90px;
+            font-weight: bold;
+        }
+
+        .empty{
+            color: #7b8794;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<main class="page">
+    <section class="panel">
+        <h1>OCAM ID Reference</h1>
+        <p>Use these live OCAM values when filling import CSV columns such as status_id, company_id, manufacturer_id, category_id, model_id, location_id, and supplier_id.</p>
+
+        <div class="actions">
+            <a class="button" href="/">Back to Import</a>
+            <a class="button secondary" href="/references.csv">Download All References CSV</a>
+        </div>
+    </section>
+
+    {% for section in sections %}
+    <section class="panel">
+        <div class="section-head">
+            <h2>{{ section.title }}</h2>
+            <a class="button light" href="/references/{{ section.type }}.csv">Download CSV</a>
+        </div>
+
+        {% if section.rows %}
+        <table>
+            <thead>
+                <tr>
+                    {% for column in section.columns %}
+                    <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in section.rows %}
+                <tr>
+                    {% for column in section.columns %}
+                    <td class="{% if column == 'id' %}id{% endif %}">{{ row[column] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">No records found or OCAM API is not reachable.</p>
+        {% endif %}
+    </section>
+    {% endfor %}
+</main>
+
+</body>
+</html>

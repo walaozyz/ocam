@@ -1,0 +1,1316 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OCAM Asset Portal</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='ocam-logo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root{
+            --sidebar:#172033;
+            --sidebar-soft:#22304a;
+            --content:#f5f7fb;
+            --line:#d8dee9;
+            --text:#1f2937;
+            --muted:#667085;
+            --primary:#2563eb;
+            --success:#059669;
+            --warning:#b45309;
+            --danger:#dc2626;
+        }
+
+        body{
+            background:var(--content);
+            color:var(--text);
+            font-family:"Inter", Arial, sans-serif;
+            font-size:14px;
+        }
+
+        .shell{
+            min-height:100vh;
+            display:grid;
+            grid-template-columns:260px 1fr;
+        }
+
+        .sidebar{
+            background:var(--sidebar);
+            color:#dbe4f0;
+            padding:22px 18px;
+        }
+
+        .brand{
+            color:#fff;
+            font-size:18px;
+            font-weight:700;
+            margin-bottom:24px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .brand-logo{
+            width:42px;
+            height:42px;
+            display:block;
+            object-fit:contain;
+            flex:0 0 auto;
+        }
+
+        .brand-subtitle{
+            color:#fff;
+            line-height:1.15;
+        }
+
+        .nav-title{
+            color:#8ea0bd;
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:.04em;
+            margin:22px 8px 8px;
+            text-transform:uppercase;
+        }
+
+        .nav-link{
+            color:#dbe4f0;
+            border-radius:8px;
+            padding:10px 12px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            border:0;
+            width:100%;
+            background:transparent;
+            text-align:left;
+        }
+
+        .nav-link:hover,
+        .nav-link.active{
+            background:var(--sidebar-soft);
+            color:#fff;
+        }
+
+        .main{
+            min-width:0;
+        }
+
+        .topbar{
+            height:68px;
+            background:#fff;
+            border-bottom:1px solid var(--line);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:18px;
+            padding:0 26px;
+            position:sticky;
+            top:0;
+            z-index:10;
+        }
+
+        .topbar-left,
+        .topbar-right{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            min-width:0;
+        }
+
+        .topbar-left{
+            flex:1;
+        }
+
+        .topbar-actions{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .user-chip{
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:7px 10px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            background:#fff;
+            white-space:nowrap;
+        }
+
+        .user-chip strong{
+            display:block;
+            font-size:13px;
+            line-height:1.1;
+        }
+
+        .user-chip span{
+            color:var(--muted);
+            display:block;
+            font-size:11px;
+            line-height:1.1;
+        }
+
+        .search-wrap{
+            position:relative;
+            max-width:620px;
+            flex:1;
+        }
+
+        .search-wrap .bi-search{
+            position:absolute;
+            top:50%;
+            left:14px;
+            transform:translateY(-50%);
+            color:var(--muted);
+        }
+
+        .search-input{
+            padding-left:40px;
+            height:42px;
+            border-radius:8px;
+        }
+
+        .content{
+            padding:26px;
+        }
+
+        .portal-hero{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+            padding:24px;
+            margin-bottom:18px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+        }
+
+        .portal-title{
+            font-size:26px;
+            font-weight:800;
+            margin:0 0 6px;
+        }
+
+        .portal-subtitle{
+            color:var(--muted);
+            margin:0;
+            max-width:760px;
+        }
+
+        .section-title{
+            font-size:18px;
+            font-weight:700;
+            margin:0 0 14px;
+        }
+
+        .tile{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+            padding:18px;
+            min-height:128px;
+            cursor:pointer;
+            transition:box-shadow .15s ease, transform .15s ease;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .tile:hover{
+            box-shadow:0 10px 24px rgba(15, 23, 42, .10);
+            transform:translateY(-1px);
+        }
+
+        .tile-icon{
+            width:42px;
+            height:42px;
+            border-radius:8px;
+            display:grid;
+            place-items:center;
+            background:#e8f0ff;
+            color:var(--primary);
+            font-size:20px;
+            margin-bottom:16px;
+        }
+
+        .tile::after{
+            content:"";
+            position:absolute;
+            inset:auto 18px 16px auto;
+            width:38px;
+            height:3px;
+            border-radius:999px;
+            background:#9fb9f8;
+            opacity:.65;
+        }
+
+        .tile-title{
+            font-weight:700;
+            margin-bottom:4px;
+        }
+
+        .tile-sub{
+            color:var(--muted);
+            font-size:13px;
+        }
+
+        .stat-value{
+            font-size:28px;
+            font-weight:800;
+            line-height:1;
+            margin-top:12px;
+        }
+
+        .panel{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:20px;
+        }
+
+        .action-guide{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:12px;
+            margin-bottom:18px;
+        }
+
+        .action-card{
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:14px;
+            background:#fbfcfe;
+        }
+
+        .action-card-title{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-weight:800;
+            margin-bottom:8px;
+        }
+
+        .action-card p{
+            color:var(--muted);
+            margin:0 0 10px;
+            line-height:1.45;
+        }
+
+        .action-card code{
+            display:block;
+            background:#eef2f7;
+            border-radius:6px;
+            padding:8px;
+            font-size:12px;
+        }
+
+        .guide-insert{
+            color:var(--success);
+        }
+
+        .guide-update{
+            color:var(--primary);
+        }
+
+        .guide-delete{
+            color:var(--danger);
+        }
+
+        .step{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            color:var(--muted);
+            font-size:14px;
+            white-space:nowrap;
+        }
+
+        .step-number{
+            width:28px;
+            height:28px;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:#e8f0ff;
+            color:var(--primary);
+            font-weight:700;
+        }
+
+        .results-box{
+            max-height:380px;
+            overflow:auto;
+        }
+
+        .reference-modal .modal-content{
+            border:0;
+            border-radius:8px;
+            overflow:hidden;
+        }
+
+        .reference-modal .modal-header{
+            background:#f8fafc;
+            border-bottom:1px solid var(--line);
+        }
+
+        .reference-toolbar{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+            padding:12px;
+            margin-bottom:12px;
+        }
+
+        .reference-table-wrap{
+            border:1px solid var(--line);
+            border-radius:8px;
+            overflow:auto;
+            max-height:560px;
+        }
+
+        .reference-table-wrap thead th{
+            position:sticky;
+            top:0;
+            background:#f8fafc;
+            z-index:1;
+            border-bottom:1px solid var(--line);
+            font-size:12px;
+            text-transform:uppercase;
+            color:#475467;
+        }
+
+        .sort-button{
+            border:0;
+            background:transparent;
+            color:#475467;
+            font:inherit;
+            font-weight:800;
+            padding:0;
+            width:100%;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            text-transform:uppercase;
+        }
+
+        .sort-button:hover,
+        .sort-button.active{
+            color:var(--primary);
+        }
+
+        .sort-icon{
+            color:#98a2b3;
+            font-size:13px;
+        }
+
+        .sort-button.active .sort-icon{
+            color:var(--primary);
+        }
+
+        .reference-table-wrap tbody td:first-child{
+            font-weight:800;
+        }
+
+        .reference-table-wrap tbody tr{
+            cursor:pointer;
+        }
+
+        .reference-table-wrap tbody tr:hover td{
+            background:#f8fafc;
+        }
+
+        .detail-hero{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#f8fafc;
+            padding:16px;
+            margin-bottom:16px;
+        }
+
+        .detail-kicker{
+            color:var(--muted);
+            font-size:12px;
+            font-weight:800;
+            letter-spacing:.04em;
+            text-transform:uppercase;
+            margin-bottom:4px;
+        }
+
+        .detail-title{
+            font-size:22px;
+            font-weight:800;
+            margin:0;
+        }
+
+        .detail-grid{
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:10px;
+        }
+
+        .detail-field{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+            padding:12px;
+            min-width:0;
+        }
+
+        .detail-label{
+            color:var(--muted);
+            font-size:12px;
+            font-weight:800;
+            margin-bottom:6px;
+            text-transform:uppercase;
+        }
+
+        .detail-value{
+            font-weight:600;
+            overflow-wrap:anywhere;
+            white-space:pre-wrap;
+        }
+
+        .detail-empty{
+            color:#98a2b3;
+            font-weight:500;
+        }
+
+        .max-warning{
+            display:none;
+            color:var(--warning);
+            font-size:12px;
+            margin-top:6px;
+        }
+
+        .global-results{
+            position:absolute;
+            left:0;
+            right:0;
+            top:48px;
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:8px;
+            box-shadow:0 14px 32px rgba(15, 23, 42, .14);
+            max-height:420px;
+            overflow:auto;
+            display:none;
+            z-index:20;
+        }
+
+        .global-result{
+            padding:12px 14px;
+            border-bottom:1px solid #edf1f6;
+            cursor:pointer;
+        }
+
+        .global-result:hover{
+            background:#f8fafc;
+        }
+
+        .badge-soft{
+            background:#eef4ff;
+            color:#1d4ed8;
+        }
+
+        code{
+            white-space:pre-wrap;
+            word-break:break-word;
+        }
+
+        @media (max-width: 900px){
+            .shell{
+                grid-template-columns:1fr;
+            }
+
+            .sidebar{
+                position:static;
+            }
+
+            .topbar{
+                align-items:stretch;
+                height:auto;
+                flex-direction:column;
+                padding:16px;
+            }
+
+            .topbar-left,
+            .topbar-right{
+                align-items:stretch;
+                flex-direction:column;
+                width:100%;
+            }
+
+            .topbar-right .user-chip,
+            .topbar-right .btn,
+            .topbar-right form{
+                width:100%;
+            }
+
+            .portal-hero,
+            .action-guide{
+                grid-template-columns:1fr;
+            }
+
+            .detail-grid{
+                grid-template-columns:1fr;
+            }
+
+            .portal-hero{
+                align-items:flex-start;
+                flex-direction:column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <img class="brand-logo" src="{{ url_for('static', filename='ocam-logo.png') }}" alt="OCAM">
+            <span class="brand-subtitle">OCAM Asset Portal</span>
+        </div>
+
+        <div class="nav-title">Workspace</div>
+        <button class="nav-link active" type="button"><i class="bi bi-grid-1x2"></i> Dashboard</button>
+        <button class="nav-link" type="button" data-reference="assets"><i class="bi bi-box-seam"></i> Assets</button>
+        <button class="nav-link" type="button" data-reference="licenses"><i class="bi bi-key"></i> Licenses</button>
+        <a class="nav-link text-decoration-none" href="#import-panel"><i class="bi bi-file-earmark-arrow-up"></i> Import CSV</a>
+        <a class="nav-link text-decoration-none" href="/references.csv"><i class="bi bi-file-earmark-arrow-down"></i> Export Reference CSV</a>
+
+        <div class="nav-title">Reference Data</div>
+        <button class="nav-link" type="button" data-reference="manufacturers"><i class="bi bi-buildings"></i> Manufacturers</button>
+        <button class="nav-link" type="button" data-reference="models"><i class="bi bi-pc-display"></i> Models</button>
+        <button class="nav-link" type="button" data-reference="categories"><i class="bi bi-folder2"></i> Categories</button>
+        <button class="nav-link" type="button" data-reference="companies"><i class="bi bi-building"></i> Companies</button>
+        <button class="nav-link" type="button" data-reference="locations"><i class="bi bi-geo-alt"></i> Locations</button>
+        <button class="nav-link" type="button" data-reference="status"><i class="bi bi-flag"></i> Status Labels</button>
+        <button class="nav-link" type="button" data-reference="suppliers"><i class="bi bi-truck"></i> Suppliers</button>
+        <button class="nav-link" type="button" data-reference="users"><i class="bi bi-person"></i> Users</button>
+
+        {% if current_user and current_user.role in ('superadmin', 'admin') %}
+        <div class="nav-title">Portal Admin</div>
+        <a class="nav-link text-decoration-none" href="/users"><i class="bi bi-people"></i> User Management</a>
+        {% endif %}
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input id="globalSearch" class="form-control search-input" type="search" placeholder="Search anything">
+                    <div id="globalResults" class="global-results"></div>
+                </div>
+                <a class="btn btn-primary" href="#import-panel"><i class="bi bi-upload"></i> Import</a>
+            </div>
+            <div class="topbar-right">
+                {% if current_user %}
+                <div class="user-chip">
+                    <i class="bi bi-person-circle"></i>
+                    <div>
+                        <strong>{{ current_user.username }}</strong>
+                        <span>{{ role_label(current_user.role) }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                <form action="/logout" method="post" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-box-arrow-right"></i> Sign Out</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="content">
+            <section class="portal-hero">
+                <div>
+                    <h1 class="portal-title">Asset Management Portal</h1>
+                    <p class="portal-subtitle">Search assets, look up OCAM IDs, preview CSV changes, and import updates without loading the whole Snipe-IT database at once.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-primary" href="/references.csv"><i class="bi bi-table"></i> ID Reference</a>
+                    <a class="btn btn-primary" href="#import-panel"><i class="bi bi-upload"></i> Import CSV</a>
+                </div>
+            </section>
+
+            <h2 class="section-title">Dashboard</h2>
+
+            <div class="row g-3 mb-4" id="statsRow">
+                <div class="col-12 col-sm-6 col-xl">
+                    <div class="tile" data-reference="assets">
+                        <div class="tile-icon"><i class="bi bi-box-seam"></i></div>
+                        <div class="tile-title">Assets</div>
+                        <div class="tile-sub">Search and update asset records</div>
+                        <div class="stat-value" data-stat="assets">...</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl">
+                    <div class="tile" data-reference="licenses">
+                        <div class="tile-icon"><i class="bi bi-key"></i></div>
+                        <div class="tile-title">Licenses</div>
+                        <div class="tile-sub">Search and update license records</div>
+                        <div class="stat-value" data-stat="licenses">...</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl">
+                    <div class="tile" data-reference="models">
+                        <div class="tile-icon"><i class="bi bi-pc-display"></i></div>
+                        <div class="tile-title">Models</div>
+                        <div class="tile-sub">Lookup model IDs</div>
+                        <div class="stat-value" data-stat="models">...</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl">
+                    <div class="tile" data-reference="manufacturers">
+                        <div class="tile-icon"><i class="bi bi-buildings"></i></div>
+                        <div class="tile-title">Manufacturers</div>
+                        <div class="tile-sub">Lookup manufacturer IDs</div>
+                        <div class="stat-value" data-stat="manufacturers">...</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl">
+                    <div class="tile" data-reference="companies">
+                        <div class="tile-icon"><i class="bi bi-building"></i></div>
+                        <div class="tile-title">Companies</div>
+                        <div class="tile-sub">Lookup company IDs</div>
+                        <div class="stat-value" data-stat="companies">...</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Reference Data</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="tile" data-reference="status">
+                        <div class="tile-icon"><i class="bi bi-flag"></i></div>
+                        <div class="tile-title">Status Labels</div>
+                        <div class="tile-sub">Map status names to IDs</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="tile" data-reference="locations">
+                        <div class="tile-icon"><i class="bi bi-geo-alt"></i></div>
+                        <div class="tile-title">Locations</div>
+                        <div class="tile-sub">Find location_id values</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="tile" data-reference="categories">
+                        <div class="tile-icon"><i class="bi bi-folder2"></i></div>
+                        <div class="tile-title">Categories</div>
+                        <div class="tile-sub">Find category_id values</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="tile" data-reference="suppliers">
+                        <div class="tile-icon"><i class="bi bi-truck"></i></div>
+                        <div class="tile-title">Suppliers</div>
+                        <div class="tile-sub">Find supplier_id values</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="panel" id="import-panel">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                    <h2 class="section-title mb-0">Import Assets and Licenses</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-secondary btn-sm" href="/template/asset"><i class="bi bi-download"></i> Asset Template</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="/template/license"><i class="bi bi-download"></i> License Template</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="/references.csv"><i class="bi bi-table"></i> ID Reference</a>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <div class="step"><span class="step-number">1</span> Template</div>
+                    <div class="step"><span class="step-number">2</span> Upload</div>
+                    <div class="step"><span class="step-number">3</span> Preview</div>
+                    <div class="step"><span class="step-number">4</span> Import</div>
+                </div>
+
+                <div class="action-guide">
+                    <div class="action-card">
+                        <div class="action-card-title guide-insert"><i class="bi bi-plus-circle"></i> insert</div>
+                        <p>Create a new asset or license. Leave <strong>id</strong> blank. Required names must be entered in the correct ID columns from the reference tables.</p>
+                        <code>action,item_type,id,name,asset_tag,model_id,status_id,category_id,seats
+insert,asset,,Laptop 01,LT001,317,5,,
+insert,license,,Microsoft 365,,,,,12,10</code>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-card-title guide-update"><i class="bi bi-pencil-square"></i> update</div>
+                        <p>Change an existing record by OCAM <strong>id</strong>. Fill only the columns you want to change. Use <strong>__clear__</strong> to clear an optional value.</p>
+                        <code>action,item_type,id,notes,location_id,product_key
+update,asset,2044,Moved to HQ,1,
+update,license,209,,,,AAAA-BBBB-CCCC</code>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-card-title guide-delete"><i class="bi bi-trash3"></i> delete</div>
+                        <p>Remove an existing asset or license by OCAM <strong>id</strong>. Other columns are ignored. Preview first because deletion is permanent in OCAM.</p>
+                        <code>action,item_type,id
+delete,asset,2044
+delete,license,209</code>
+                    </div>
+                </div>
+
+                <div class="alert alert-info d-flex gap-2 align-items-start">
+                    <i class="bi bi-info-circle mt-1"></i>
+                    <div>
+                        <div class="fw-bold mb-1">Required fields for insert</div>
+                        <div>Assets: <strong>Asset tag</strong> (<code>asset_tag</code>), <strong>Model</strong> (<code>model_id</code>), and <strong>Status</strong> (<code>status_id</code>).</div>
+                        <div>Licenses: <strong>Software Name</strong> (<code>name</code>), <strong>Category Name</strong> (<code>category_id</code>), and <strong>Seats</strong> (<code>seats</code>).</div>
+                        <div class="mt-2">Columns ending in <strong>_id</strong> must use OCAM numeric IDs. Open any reference tile, search by name, then copy the ID into the CSV.</div>
+                        <div class="mt-1">For license product keys, keep using the CSV column <code>product_key</code>; the portal sends it to OCAM correctly during import.</div>
+                    </div>
+                </div>
+
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                <form action="/import" method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="col-12 col-lg-7">
+                        <label class="form-label fw-bold">CSV File</label>
+                        <input class="form-control" type="file" name="csv_file" accept=".csv,text/csv" required>
+                    </div>
+                    <div class="col-12 col-lg-auto">
+                        <button class="btn btn-outline-primary" name="dry_run" value="1" type="submit">
+                            <i class="bi bi-eye"></i> Preview CSV
+                        </button>
+                    </div>
+                    <div class="col-12 col-lg-auto">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-cloud-upload"></i> Import CSV
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            {% if results %}
+            <section class="panel mt-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <h2 class="section-title mb-0">{% if dry_run %}CSV Preview{% else %}Import Result{% endif %}</h2>
+                    <span class="badge text-bg-light">{{ success_count }} / {{ total }}</span>
+                </div>
+                <div class="results-box">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Row</th>
+                                <th>Action</th>
+                                <th>Type</th>
+                                <th>Target</th>
+                                <th>Status</th>
+                                <th>API</th>
+                                <th>Payload</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>{{ result.row }}</td>
+                                <td>{{ result.action }}</td>
+                                <td>{{ result.item_type }}</td>
+                                <td>{{ result.target }}</td>
+                                <td>
+                                    {% if result.status == 'Success' %}
+                                    <span class="badge text-bg-success">{{ result.status }}</span>
+                                    {% elif result.status == 'Ready' %}
+                                    <span class="badge text-bg-warning">{{ result.status }}</span>
+                                    {% else %}
+                                    <span class="badge text-bg-danger">{{ result.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><code>{{ result.endpoint }}</code></td>
+                                <td><code>{{ result.payload }}</code></td>
+                                <td>{{ result.message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+{% set toast_title = none %}
+{% set toast_body = none %}
+{% set toast_class = "text-bg-success" %}
+{% if error %}
+    {% set toast_title = "Import failed" %}
+    {% set toast_body = error %}
+    {% set toast_class = "text-bg-danger" %}
+{% elif results %}
+    {% if success_count != total %}
+        {% set toast_title = "Import failed" %}
+        {% set toast_body = success_count ~ " / " ~ total ~ " rows passed. Check the result table." %}
+        {% set toast_class = "text-bg-danger" %}
+    {% elif dry_run %}
+        {% set toast_title = "Preview ready" %}
+        {% set toast_body = success_count ~ " / " ~ total ~ " rows are ready." %}
+        {% set toast_class = "text-bg-primary" %}
+    {% else %}
+        {% set toast_title = "Import successful" %}
+        {% set toast_body = success_count ~ " / " ~ total ~ " rows imported." %}
+        {% set toast_class = "text-bg-success" %}
+    {% endif %}
+{% endif %}
+
+{% if toast_title %}
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="importToast" class="toast align-items-center {{ toast_class }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4500">
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>{{ toast_title }}</strong><br>
+                {{ toast_body }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal fade reference-modal" id="referenceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title h5" id="referenceTitle">Reference Data</h2>
+                    <div class="text-muted small" id="referenceCount"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="reference-toolbar">
+                    <div class="row g-2 align-items-end">
+                    <div class="col-12 col-lg">
+                        <label class="form-label small fw-bold">Search</label>
+                        <input id="referenceSearch" class="form-control" type="search" placeholder="Search">
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <label class="form-label small fw-bold">Rows per page</label>
+                        <select id="referenceLimit" class="form-select">
+                            <option value="20">20</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                            <option value="500">500</option>
+                            <option value="max">Max</option>
+                        </select>
+                        <div id="maxWarning" class="max-warning">Max can be slower for assets and users.</div>
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <a id="referenceCsv" class="btn btn-outline-secondary" href="#"><i class="bi bi-download"></i> Download CSV</a>
+                    </div>
+                    </div>
+                    <div class="text-muted small mt-2">
+                        Click any column header to sort ascending or descending. Sorting applies to the full search result, not only the visible page.
+                    </div>
+                </div>
+                <div class="table-responsive reference-table-wrap">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead id="referenceHead"></thead>
+                        <tbody id="referenceBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button id="referencePrev" type="button" class="btn btn-outline-secondary">Previous</button>
+                <span id="referencePage" class="text-muted small"></span>
+                <button id="referenceNext" type="button" class="btn btn-outline-secondary">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade reference-modal" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title h5" id="detailModalTitle">Record Details</h2>
+                    <div class="text-muted small" id="detailModalSubtitle"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const referenceState = {
+    type: null,
+    page: 1,
+    limit: "50",
+    search: "",
+    total: 0,
+    sort: "",
+    order: "asc"
+};
+
+const referenceModal = new bootstrap.Modal(document.getElementById("referenceModal"));
+const detailModal = new bootstrap.Modal(document.getElementById("detailModal"));
+const searchTimers = {};
+
+function html(value){
+    if(value === null || value === undefined){
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function formatNumber(value){
+    if(value === null || value === undefined){
+        return "-";
+    }
+
+    return Number(value).toLocaleString();
+}
+
+function titleCase(value){
+    return String(value)
+        .replaceAll("_", " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function detailValue(value){
+    if(value === null || value === undefined || value === ""){
+        return `<span class="detail-empty">Not set</span>`;
+    }
+
+    if(typeof value === "boolean"){
+        return value ? "Yes" : "No";
+    }
+
+    if(Array.isArray(value)){
+        if(value.length === 0){
+            return `<span class="detail-empty">Not set</span>`;
+        }
+
+        return value.map((item) => detailValue(item)).join("<br>");
+    }
+
+    if(typeof value === "object"){
+        const compact = value.name || value.text || value.username || value.email || value.id;
+
+        if(compact && Object.keys(value).length <= 3){
+            return html(compact);
+        }
+
+        return `<code>${html(JSON.stringify(value, null, 2))}</code>`;
+    }
+
+    return html(value);
+}
+
+function renderDetail(record, type, recordTitle){
+    const entries = Object.entries(record || {});
+    const heading = recordTitle || record.asset_tag || record.name || record.license_name || record.id || "Record";
+
+    document.getElementById("detailModalTitle").textContent = heading;
+    document.getElementById("detailModalSubtitle").textContent = `${titleCase(type)} details`;
+
+    if(entries.length === 0){
+        document.getElementById("detailModalBody").innerHTML = `
+            <div class="text-muted py-4">No details returned by OCAM.</div>
+        `;
+        return;
+    }
+
+    document.getElementById("detailModalBody").innerHTML = `
+        <div class="detail-hero">
+            <div class="detail-kicker">${html(titleCase(type))}</div>
+            <h3 class="detail-title">${html(heading)}</h3>
+        </div>
+        <div class="detail-grid">
+            ${entries.map(([key, value]) => `
+                <div class="detail-field">
+                    <div class="detail-label">${html(titleCase(key))}</div>
+                    <div class="detail-value">${detailValue(value)}</div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+}
+
+async function openReferenceDetail(type, id){
+    document.getElementById("detailModalTitle").textContent = "Loading";
+    document.getElementById("detailModalSubtitle").textContent = "";
+    document.getElementById("detailModalBody").innerHTML = `
+        <div class="text-muted py-4">Loading details...</div>
+    `;
+    detailModal.show();
+
+    try{
+        const response = await fetch(`/api/reference/${type}/${id}`);
+        const data = await response.json();
+
+        if(!data.ok){
+            document.getElementById("detailModalTitle").textContent = "Unable to load details";
+            document.getElementById("detailModalBody").innerHTML = `
+                <div class="text-danger py-4">${html(data.message || "OCAM did not return this record.")}</div>
+            `;
+            return;
+        }
+
+        renderDetail(data.record, data.type, data.record_title);
+    }catch(error){
+        document.getElementById("detailModalTitle").textContent = "Unable to load details";
+        document.getElementById("detailModalBody").innerHTML = `
+            <div class="text-danger py-4">Could not load details. Please try again.</div>
+        `;
+    }
+}
+
+async function loadDashboardCounts(){
+    try{
+        const response = await fetch("/api/dashboard-counts");
+        const data = await response.json();
+
+        data.stats.forEach((stat) => {
+            const target = document.querySelector(`[data-stat="${stat.id}"]`);
+
+            if(target){
+                target.textContent = stat.ok ? formatNumber(stat.total) : "-";
+            }
+        });
+    }catch(error){
+        document.querySelectorAll("[data-stat]").forEach((target) => {
+            target.textContent = "-";
+        });
+    }
+}
+
+async function openReference(type, page = 1){
+    referenceState.type = type;
+    referenceState.page = page;
+    referenceState.limit = document.getElementById("referenceLimit").value;
+    const isMax = referenceState.limit === "max";
+
+    document.getElementById("referenceTitle").textContent = "Loading";
+    document.getElementById("referenceCount").textContent = "";
+    document.getElementById("referenceHead").innerHTML = "";
+    document.getElementById("referenceBody").innerHTML = `
+        <tr><td class="text-muted py-4">Loading...</td></tr>
+    `;
+    document.getElementById("maxWarning").style.display = isMax ? "block" : "none";
+    document.getElementById("referenceCsv").href = `/references/${type}.csv`;
+    referenceModal.show();
+
+    const params = new URLSearchParams({
+        page: isMax ? 1 : referenceState.page,
+        limit: referenceState.limit,
+        search: referenceState.search,
+        sort: referenceState.sort,
+        order: referenceState.order
+    });
+
+    const response = await fetch(`/api/reference/${type}?${params}`);
+    const data = await response.json();
+
+    if(!data.ok){
+        document.getElementById("referenceTitle").textContent = "Reference Data";
+        document.getElementById("referenceBody").innerHTML = `
+            <tr><td class="text-danger py-4">${html(data.message || "Unable to load data.")}</td></tr>
+        `;
+        return;
+    }
+
+    referenceState.total = data.total;
+    referenceState.page = data.page;
+    referenceState.sort = data.sort || "";
+    referenceState.order = data.order || "asc";
+    document.getElementById("referenceTitle").textContent = data.title;
+    document.getElementById("referenceCount").textContent = isMax
+        ? `${formatNumber(data.total)} records shown`
+        : `${formatNumber(data.total)} records`;
+    document.getElementById("referenceHead").innerHTML = `
+        <tr>${data.columns.map((column) => {
+            const active = column === referenceState.sort;
+            const icon = !active ? "bi-arrow-down-up" : referenceState.order === "asc" ? "bi-arrow-up" : "bi-arrow-down";
+
+            return `
+                <th>
+                    <button class="sort-button ${active ? "active" : ""}" type="button" data-sort-column="${html(column)}">
+                        <span>${html(column)}</span>
+                        <i class="bi ${icon} sort-icon"></i>
+                    </button>
+                </th>
+            `;
+        }).join("")}</tr>
+    `;
+
+    if(data.rows.length === 0){
+        document.getElementById("referenceBody").innerHTML = `
+            <tr><td class="text-muted py-4" colspan="${data.columns.length}">No records found.</td></tr>
+        `;
+    }else{
+        document.getElementById("referenceBody").innerHTML = data.rows.map((row) => `
+            <tr data-detail-id="${html(row.id)}">
+                ${data.columns.map((column) => `<td>${html(row[column])}</td>`).join("")}
+            </tr>
+        `).join("");
+    }
+
+    if(isMax){
+        document.getElementById("referencePage").textContent = "Max selected";
+        document.getElementById("referencePrev").disabled = true;
+        document.getElementById("referenceNext").disabled = true;
+    }else{
+        const totalPages = Math.max(Math.ceil(data.total / Number(data.limit)), 1);
+        document.getElementById("referencePage").textContent = `Page ${data.page} of ${totalPages}`;
+        document.getElementById("referencePrev").disabled = data.page <= 1;
+        document.getElementById("referenceNext").disabled = data.page >= totalPages;
+    }
+}
+
+function debounce(key, callback, delay = 350){
+    clearTimeout(searchTimers[key]);
+    searchTimers[key] = setTimeout(callback, delay);
+}
+
+document.querySelectorAll("[data-reference]").forEach((element) => {
+    element.addEventListener("click", () => {
+        referenceState.search = "";
+        referenceState.sort = "";
+        referenceState.order = "asc";
+        document.getElementById("referenceSearch").value = "";
+        openReference(element.dataset.reference, 1);
+    });
+});
+
+document.getElementById("referenceSearch").addEventListener("input", (event) => {
+    referenceState.search = event.target.value.trim();
+    debounce("reference", () => openReference(referenceState.type, 1));
+});
+
+document.getElementById("referenceHead").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-sort-column]");
+
+    if(!button){
+        return;
+    }
+
+    const column = button.dataset.sortColumn;
+
+    if(referenceState.sort === column){
+        referenceState.order = referenceState.order === "asc" ? "desc" : "asc";
+    }else{
+        referenceState.sort = column;
+        referenceState.order = "asc";
+    }
+
+    openReference(referenceState.type, 1);
+});
+
+document.getElementById("referenceBody").addEventListener("click", (event) => {
+    const row = event.target.closest("[data-detail-id]");
+
+    if(!row || !referenceState.type){
+        return;
+    }
+
+    openReferenceDetail(referenceState.type, row.dataset.detailId);
+});
+
+document.getElementById("referenceLimit").addEventListener("change", () => {
+    openReference(referenceState.type, 1);
+});
+
+document.getElementById("referencePrev").addEventListener("click", () => {
+    openReference(referenceState.type, referenceState.page - 1);
+});
+
+document.getElementById("referenceNext").addEventListener("click", () => {
+    openReference(referenceState.type, referenceState.page + 1);
+});
+
+async function runGlobalSearch(term){
+    const box = document.getElementById("globalResults");
+
+    if(term.length < 2){
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+    }
+
+    const params = new URLSearchParams({q: term});
+    const response = await fetch(`/api/global-search?${params}`);
+    const data = await response.json();
+
+    if(!data.results.length){
+        box.innerHTML = `<div class="global-result text-muted">No results found.</div>`;
+        box.style.display = "block";
+        return;
+    }
+
+    box.innerHTML = data.results.map((result) => `
+        <div class="global-result" data-reference="${html(result.reference_type)}">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-soft">${html(result.type)}</span>
+                <strong>${html(result.label)}</strong>
+                <span class="text-muted small">#${html(result.id)}</span>
+            </div>
+            <div class="text-muted small">${html(result.description)}</div>
+        </div>
+    `).join("");
+    box.style.display = "block";
+
+    box.querySelectorAll("[data-reference]").forEach((row) => {
+        row.addEventListener("click", () => {
+            box.style.display = "none";
+            referenceState.search = term;
+            referenceState.sort = "";
+            referenceState.order = "asc";
+            document.getElementById("referenceSearch").value = term;
+            openReference(row.dataset.reference, 1);
+        });
+    });
+}
+
+document.getElementById("globalSearch").addEventListener("input", (event) => {
+    const term = event.target.value.trim();
+    debounce("global", () => runGlobalSearch(term), 300);
+});
+
+document.addEventListener("keydown", (event) => {
+    if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k"){
+        event.preventDefault();
+        document.getElementById("globalSearch").focus();
+    }
+});
+
+document.addEventListener("click", (event) => {
+    if(!event.target.closest(".search-wrap")){
+        document.getElementById("globalResults").style.display = "none";
+    }
+});
+
+loadDashboardCounts();
+
+const importToast = document.getElementById("importToast");
+if(importToast){
+    bootstrap.Toast.getOrCreateInstance(importToast).show();
+}
+</script>
+</body>
+</html>

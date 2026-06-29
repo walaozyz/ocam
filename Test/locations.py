@@ -1,0 +1,21 @@
+import requests
+import urllib3
+
+urllib3.disable_warnings()
+
+SNIPEIT_URL = "https://ocam.ocsports.com.my"
+API_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiNWRkMjk3ODA3ZDZkOTI5N2RhMzFhOTEzODNmNDhhMGRlYTQ4MjgwZDE4NGRkOGI1OGQxMzQ4ZTFiOTFjMDFmMTY5OGUwOTMxNGRjNTI4YzYiLCJpYXQiOjE3ODEwMDE2OTUuNzMwODU4LCJuYmYiOjE3ODEwMDE2OTUuNzMwODYxLCJleHAiOjIyNTQzODcyOTUuNjg0OTYsInN1YiI6IjMiLCJzY29wZXMiOltdfQ.zaMURmaYofv-pGZZRPSo1FFTZb-iY72nXFvDUBHTYW7dIrO16t7l0R10dVkLEjKhfIyFQFIzFfqlGc6TYJYPaL6JJvgxN3AKSp36B5Q7vJxGskRgbRgJB5fvQTUNTo1s8_BdzXjAqoKOrnh_BkhAq2YDYlq0AG1RiFe1vsf6fUkFWt_Gvnm7FUyiAdq9OE_X6yPHvLwCZwymqXaewsOYjMc0EJtwiIFrqy0XW3kUnFS5pfZJVaFj7OzGgvTpTFPiW61GD3GXkgqOOuNpruZ_lFJoT-9H85hANyA3GXq4B7WQHYoMFjQUlbbCJ5qEKyRNHLqgjlri5sA4EYRqG7xlwcrqGfhhRqGBW89ygDeQoulr5LlFdoW7SQsMHTVsW2aplD0-Hnl8mZWF2g4UOjepg4VvP9vUmmYdAwWKobwSWdoWKfCmNhRunimDHwdNWM2XSZtBSUwtwt_Y4-pLAZJKgUZ5Vj5ngAAkwoYtnaneASn7KcrUsjIFD6ipeePF_bQBWtnJifc6ae8Ouvz6MrzWl3UIg409zgKu7-7-Evv5rmVtvN0_oMMWDr1wKvmVzVU-Z6f19su3AJyDmJK4yODlwCAIgx10mNBfBynvjLDMDFMl43sqKSTOt84L_QCK098FMnvZORmBaV8jbvyy1DxBvAXO9NgWJeQFALk3kLoyNrU"
+
+headers = {
+    "Authorization": f"Bearer {API_TOKEN}",
+    "Accept": "application/json"
+}
+
+response = requests.get(
+    f"{SNIPEIT_URL}/api/v1/locations",
+    headers=headers,
+    verify=False
+)
+
+print(response.status_code)
+print(response.json())

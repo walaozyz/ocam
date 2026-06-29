@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Management | OCAM Asset Portal</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='ocam-logo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root{
+            --sidebar:#172033;
+            --sidebar-soft:#22304a;
+            --content:#f5f7fb;
+            --line:#d8dee9;
+            --text:#1f2937;
+            --muted:#667085;
+            --primary:#2563eb;
+            --success:#059669;
+            --danger:#dc2626;
+        }
+
+        body{
+            background:var(--content);
+            color:var(--text);
+            font-family:"Inter", Arial, sans-serif;
+            font-size:14px;
+            margin:0;
+        }
+
+        .shell{
+            min-height:100vh;
+            display:grid;
+            grid-template-columns:260px 1fr;
+        }
+
+        .sidebar{
+            background:var(--sidebar);
+            color:#dbe4f0;
+            padding:22px 18px;
+        }
+
+        .brand{
+            color:#fff;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-size:18px;
+            font-weight:800;
+            margin-bottom:24px;
+        }
+
+        .brand img{
+            width:42px;
+            height:42px;
+            object-fit:contain;
+        }
+
+        .nav-title{
+            color:#8ea0bd;
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:.04em;
+            margin:22px 8px 8px;
+            text-transform:uppercase;
+        }
+
+        .nav-link{
+            color:#dbe4f0;
+            border-radius:8px;
+            padding:10px 12px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            border:0;
+            width:100%;
+            background:transparent;
+            text-align:left;
+        }
+
+        .nav-link:hover,
+        .nav-link.active{
+            background:var(--sidebar-soft);
+            color:#fff;
+        }
+
+        .main{
+            min-width:0;
+        }
+
+        .topbar{
+            height:68px;
+            background:#fff;
+            border-bottom:1px solid var(--line);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+            padding:0 26px;
+            position:sticky;
+            top:0;
+            z-index:10;
+        }
+
+        .topbar-actions{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .user-chip{
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:7px 10px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            background:#fff;
+            white-space:nowrap;
+        }
+
+        .user-chip strong{
+            display:block;
+            font-size:13px;
+            line-height:1.1;
+        }
+
+        .user-chip span{
+            color:var(--muted);
+            display:block;
+            font-size:11px;
+            line-height:1.1;
+        }
+
+        .content{
+            padding:26px;
+        }
+
+        .panel{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:20px;
+        }
+
+        .portal-hero{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+            padding:24px;
+            margin-bottom:18px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+        }
+
+        .page-title{
+            font-size:26px;
+            font-weight:800;
+            margin:0;
+        }
+
+        .page-subtitle{
+            color:var(--muted);
+            margin:6px 0 0;
+            max-width:720px;
+        }
+
+        .user-stats{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:12px;
+            margin-bottom:18px;
+        }
+
+        .user-stat{
+            border:1px solid var(--line);
+            border-radius:8px;
+            background:#fff;
+            padding:16px;
+        }
+
+        .user-stat-label{
+            color:var(--muted);
+            font-size:12px;
+            font-weight:800;
+            text-transform:uppercase;
+        }
+
+        .user-stat-value{
+            font-size:26px;
+            font-weight:800;
+            margin-top:6px;
+        }
+
+        .table thead th{
+            color:#475467;
+            font-size:12px;
+            text-transform:uppercase;
+            background:#f8fafc;
+        }
+
+        .table-wrap{
+            border:1px solid var(--line);
+            border-radius:8px;
+            overflow:auto;
+        }
+
+        .btn,
+        .form-control,
+        .form-select{
+            border-radius:8px;
+        }
+
+        .role-badge{
+            border-radius:999px;
+            font-weight:700;
+        }
+
+        .reset-option{
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:12px;
+            margin-bottom:10px;
+        }
+
+        .reset-option .form-check-label{
+            font-weight:800;
+        }
+
+        .reset-option p{
+            color:var(--muted);
+            font-size:12px;
+            margin:4px 0 0;
+        }
+
+        .custom-password-fields{
+            display:none;
+            margin-top:12px;
+        }
+
+        @media (max-width: 900px){
+            .shell{
+                grid-template-columns:1fr;
+            }
+
+            .topbar,
+            .portal-hero{
+                align-items:stretch;
+                height:auto;
+                flex-direction:column;
+            }
+
+            .topbar-actions{
+                align-items:stretch;
+                flex-direction:column;
+                width:100%;
+            }
+
+            .user-stats{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+{% set active_count = users | selectattr('active') | list | length %}
+{% set admin_count = users | selectattr('role', 'equalto', 'admin') | list | length %}
+{% set superadmin_count = users | selectattr('role', 'equalto', 'superadmin') | list | length %}
+<div class="shell">
+    <aside class="sidebar">
+        <a class="brand text-decoration-none" href="/">
+            <img src="{{ url_for('static', filename='ocam-logo.png') }}" alt="OCAM">
+            <span>OCAM Asset Portal</span>
+        </a>
+
+        <div class="nav-title">Workspace</div>
+        <a class="nav-link text-decoration-none" href="/"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+        <a class="nav-link text-decoration-none active" href="/users"><i class="bi bi-people"></i> User Management</a>
+
+        <div class="nav-title">Access Rules</div>
+        <div class="small px-2 text-light opacity-75">
+            Admins manage users. Only Super Admin can assign Admin rights.
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <strong>User Management</strong>
+                <div class="text-muted small">Portal access control</div>
+            </div>
+            <div class="topbar-actions">
+                <div class="user-chip">
+                    <i class="bi bi-person-circle"></i>
+                    <div>
+                        <strong>{{ current_user.username }}</strong>
+                        <span>{{ role_label(current_user.role) }}</span>
+                    </div>
+                </div>
+                <form action="/logout" method="post" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-box-arrow-right"></i> Sign Out</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="content">
+            <section class="portal-hero">
+                <div>
+                    <h1 class="page-title">User Management</h1>
+                    <p class="page-subtitle">Create portal accounts, reset passwords, and control who can administer OCAM Asset Portal users.</p>
+                </div>
+                <a class="btn btn-outline-primary" href="/"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+            </section>
+
+            <div class="user-stats">
+                <div class="user-stat">
+                    <div class="user-stat-label">Total Users</div>
+                    <div class="user-stat-value">{{ users | length }}</div>
+                </div>
+                <div class="user-stat">
+                    <div class="user-stat-label">Active Users</div>
+                    <div class="user-stat-value">{{ active_count }}</div>
+                </div>
+                <div class="user-stat">
+                    <div class="user-stat-label">Privileged Users</div>
+                    <div class="user-stat-value">{{ admin_count + superadmin_count }}</div>
+                </div>
+            </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <section class="panel mb-4">
+        <h2 class="h5 fw-bold mb-3">Create User</h2>
+        <form action="/users/create" method="post" class="row g-3 align-items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="col-12 col-md">
+                <label class="form-label fw-bold">Username</label>
+                <input class="form-control" name="username" autocomplete="off" required>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label fw-bold">Role</label>
+                <select class="form-select" name="role">
+                    <option value="user">User</option>
+                    {% if current_user.role == 'superadmin' %}
+                    <option value="admin">Admin</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-12 col-md-auto">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-person-plus"></i> Create User</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <h2 class="h5 fw-bold mb-0">Portal Users</h2>
+            <div class="text-muted small">
+                Only Super Admin can grant Admin rights.
+            </div>
+        </div>
+
+        <div class="table-responsive table-wrap">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Password</th>
+                        <th>Last Login</th>
+                        <th>Update Access</th>
+                        <th>Reset Password</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="fw-bold">{{ user.username }}</td>
+                        <td>
+                            <span class="badge role-badge {% if user.role == 'superadmin' %}text-bg-dark{% elif user.role == 'admin' %}text-bg-primary{% else %}text-bg-secondary{% endif %}">
+                                {{ role_label(user.role) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user.active %}
+                            <span class="badge text-bg-success">Active</span>
+                            {% else %}
+                            <span class="badge text-bg-danger">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.password_must_change %}
+                            <span class="badge text-bg-warning">Must Change</span>
+                            {% else %}
+                            <span class="text-muted small">Ready</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.last_login_at %}
+                            {{ format_timestamp(user.last_login_at) }}
+                            {% else %}
+                            <span class="text-muted">Never</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.role == 'superadmin' %}
+                            <span class="text-muted small">Protected</span>
+                            {% else %}
+                            <form action="/users/{{ user.id }}/update" method="post" class="d-flex flex-wrap gap-2">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <select class="form-select form-select-sm" name="role" {% if current_user.role != 'superadmin' %}disabled{% endif %}>
+                                    <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+                                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                {% if current_user.role != 'superadmin' %}
+                                <input type="hidden" name="role" value="{{ user.role }}">
+                                {% endif %}
+                                <select class="form-select form-select-sm" name="active">
+                                    <option value="1" {% if user.active %}selected{% endif %}>Active</option>
+                                    <option value="0" {% if not user.active %}selected{% endif %}>Disabled</option>
+                                </select>
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-user-id="{{ user.id }}" data-username="{{ user.username }}" {% if user.role == 'superadmin' and current_user.role != 'superadmin' %}disabled{% endif %}>
+                                Reset
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="resetPasswordForm" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title h5 fw-bold">Reset Password</h2>
+                        <div class="text-muted small" id="resetPasswordSubtitle">Choose a reset method.</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="reset-option">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="reset_mode" id="resetRandom" value="random" checked>
+                            <label class="form-check-label" for="resetRandom">Generate random password</label>
+                        </div>
+                        <p>The portal creates a secure temporary password and shows it once after reset.</p>
+                    </div>
+
+                    <div class="reset-option">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="reset_mode" id="resetCustom" value="custom">
+                            <label class="form-check-label" for="resetCustom">Set custom password</label>
+                        </div>
+                        <p>Admin enters the new password now. User can sign in with it immediately.</p>
+                        <div class="custom-password-fields" id="customPasswordFields">
+                            <div class="mb-2">
+                                <label class="form-label fw-bold">New Password</label>
+                                <input class="form-control" type="password" name="custom_password" autocomplete="new-password">
+                            </div>
+                            <div>
+                                <label class="form-label fw-bold">Confirm Password</label>
+                                <input class="form-control" type="password" name="confirm_password" autocomplete="new-password">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reset-option mb-0">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="reset_mode" id="resetForceChange" value="force_change">
+                            <label class="form-check-label" for="resetForceChange">Temporary password, user changes on next sign-in</label>
+                        </div>
+                        <p>The portal creates a temporary password and requires the user to set a new one after login.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-key"></i> Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const resetModal = document.getElementById("resetPasswordModal");
+const resetForm = document.getElementById("resetPasswordForm");
+const resetSubtitle = document.getElementById("resetPasswordSubtitle");
+const customFields = document.getElementById("customPasswordFields");
+
+function syncPasswordFields(){
+    const isCustom = document.getElementById("resetCustom").checked;
+    customFields.style.display = isCustom ? "block" : "none";
+    customFields.querySelectorAll("input").forEach((input) => {
+        input.required = isCustom;
+        if(!isCustom){
+            input.value = "";
+        }
+    });
+}
+
+resetModal.addEventListener("show.bs.modal", (event) => {
+    const button = event.relatedTarget;
+    const userId = button.dataset.userId;
+    const username = button.dataset.username;
+
+    resetForm.action = `/users/${userId}/reset-password`;
+    resetSubtitle.textContent = `Choose how to reset ${username}'s password.`;
+    document.getElementById("resetRandom").checked = true;
+    syncPasswordFields();
+});
+
+document.querySelectorAll('[name="reset_mode"]').forEach((radio) => {
+    radio.addEventListener("change", syncPasswordFields);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit License</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='ocam-logo.png') }}">
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            margin:30px;
+            background:#f5f5f5;
+        }
+
+        .container{
+            max-width:1200px;
+            margin:auto;
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,.1);
+        }
+
+        h2{
+            margin-bottom:20px;
+        }
+
+        .row{
+            display:flex;
+            gap:20px;
+            margin-bottom:15px;
+        }
+
+        .col{
+            flex:1;
+        }
+
+        label{
+            display:block;
+            margin-bottom:5px;
+            font-weight:bold;
+        }
+
+        input,
+        select,
+        textarea{
+            width:100%;
+            padding:8px;
+            box-sizing:border-box;
+        }
+
+        textarea{
+            height:100px;
+        }
+
+        .readonly{
+            background:#eee;
+        }
+
+        .btn{
+            background:#28a745;
+            color:white;
+            border:none;
+            padding:12px 25px;
+            cursor:pointer;
+            font-size:16px;
+        }
+
+        .btn:hover{
+            background:#218838;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>License Information</h2>
+
+<form method="post"
+      action="/update/{{ license.id }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+<div class="row">
+
+    <div class="col">
+
+        <label>ID</label>
+
+        <input type="text"
+               value="{{ license.id }}"
+               readonly
+               class="readonly">
+
+    </div>
+
+    <div class="col">
+
+        <label>Name</label>
+
+        <input type="text"
+               name="name"
+               value="{{ license.name or '' }}">
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>License Name</label>
+
+        <input type="text"
+               name="license_name"
+               value="{{ license.license_name or '' }}">
+
+    </div>
+
+    <div class="col">
+
+        <label>License Email</label>
+
+        <input type="text"
+               name="license_email"
+               value="{{ license.license_email or '' }}">
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Product Key</label>
+
+        <input type="text"
+               name="product_key"
+               value="{{ license.product_key or '' }}">
+
+    </div>
+
+    <div class="col">
+
+        <label>Seats</label>
+
+        <input type="number"
+               name="seats"
+               value="{{ license.seats or '' }}">
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Purchase Cost</label>
+
+        <input type="text"
+               name="purchase_cost"
+               value="{{ license.purchase_cost or '' }}">
+
+    </div>
+
+    <div class="col">
+
+        <label>Order Number</label>
+
+        <input type="text"
+               name="order_number"
+               value="{{ license.order_number or '' }}">
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Purchase Order</label>
+
+        <input type="text"
+               name="purchase_order"
+               value="{{ license.purchase_order or '' }}">
+
+    </div>
+
+    <div class="col">
+
+        <label>Purchase Date</label>
+
+        <input type="date"
+               name="purchase_date"
+               value="{{ license.purchase_date or '' }}">
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Expiration Date</label>
+
+        <input type="date"
+               name="expiration_date"
+               value="{{ license.expiration_date or '' }}">
+
+    </div>
+
+    <div class="col">
+
+        <label>Termination Date</label>
+
+        <input type="date"
+               name="termination_date"
+               value="{{ license.termination_date or '' }}">
+
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Minimum Quantity</label>
+
+        <input type="number"
+               name="min_amt"
+               value="{{ license.min_amt or '' }}">
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Company</label>
+
+        <select name="company_id">
+
+            <option value="">-- Select Company --</option>
+
+            {% for c in companies %}
+
+            <option value="{{ c.id }}"
+            {% if license.company and c.id == license.company.id %}
+            selected
+            {% endif %}
+            >
+                {{ c.name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+    <div class="col">
+
+        <label>Supplier</label>
+
+        <select name="supplier_id">
+
+            <option value="">-- Select Supplier --</option>
+
+            {% for s in suppliers %}
+
+            <option value="{{ s.id }}"
+            {% if license.supplier and s.id == license.supplier.id %}
+            selected
+            {% endif %}
+            >
+                {{ s.name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Manufacturer</label>
+
+        <select name="manufacturer_id">
+
+            <option value="">-- Select Manufacturer --</option>
+
+            {% for m in manufacturers %}
+
+            <option value="{{ m.id }}"
+            {% if license.manufacturer and m.id == license.manufacturer.id %}
+            selected
+            {% endif %}
+            >
+                {{ m.name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+    <div class="col">
+
+        <label>Category</label>
+
+        <select name="category_id">
+
+            <option value="">-- Select Category --</option>
+
+            {% for c in categories %}
+
+            <option value="{{ c.id }}"
+            {% if license.category and c.id == license.category.id %}
+            selected
+            {% endif %}
+            >
+                {{ c.name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+</div>
+
+
+<div class="row">
+
+    <div class="col">
+
+        <label>Notes</label>
+
+        <textarea name="notes">{{ license.notes or '' }}</textarea>
+
+    </div>
+
+</div>
+
+<br>
+
+<button class="btn" type="submit">
+    Save Changes
+</button>
+
+<a href="/" style="margin-left:20px;">
+    Back
+</a>
+
+</form>
+
+</div>
+
+</body>
+</html>
