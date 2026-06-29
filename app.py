@@ -2,7 +2,6 @@ import csv
 import io
 import os
 import secrets
-import sqlite3
 import time
 from functools import wraps
 from urllib.parse import urlencode
@@ -19,7 +18,6 @@ urllib3.disable_warnings()
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-AUTH_DB_PATH = os.path.join(BASE_DIR, "portal_users.db")
 SECRET_KEY_PATH = os.path.join(BASE_DIR, ".portal_secret_key")
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_LOCK_SECONDS = 15 * 60
@@ -72,71 +70,36 @@ ROLE_LABELS = {
     "user": "User"
 }
 
-
-def db_connection():
-    connection = sqlite3.connect(AUTH_DB_PATH)
-    connection.row_factory = sqlite3.Row
-    return connection
-
-
-def init_auth_db():
-    with db_connection() as connection:
-        connection.execute("""
-            CREATE TABLE IF NOT EXISTS portal_users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                role TEXT NOT NULL CHECK(role IN ('superadmin', 'admin', 'user')),
-                active INTEGER NOT NULL DEFAULT 1,
-                password_must_change INTEGER NOT NULL DEFAULT 0,
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL,
-                last_login_at INTEGER
-            )
-        """)
-        columns = [
-            row["name"]
-            for row in connection.execute("PRAGMA table_info(portal_users)").fetchall()
-        ]
-
-        if "password_must_change" not in columns:
-            connection.execute(
-                "ALTER TABLE portal_users ADD COLUMN password_must_change INTEGER NOT NULL DEFAULT 0"
-            )
-
-        connection.execute("""
-            CREATE TABLE IF NOT EXISTS login_attempts (
-                attempt_key TEXT PRIMARY KEY,
-                fail_count INTEGER NOT NULL DEFAULT 0,
-                locked_until INTEGER NOT NULL DEFAULT 0,
-                updated_at INTEGER NOT NULL
-            )
-        """)
-        connection.commit()
-
-
 def get_user_by_id(user_id):
-    with db_connection() as connection:
-        return connection.execute(
-            """
-            SELECT id, username, role, active, password_must_change, created_at, updated_at, last_login_at
-            FROM portal_users
-            WHERE id = ?
-            """,
-            (user_id,)
-        ).fetchone()
+    for username, user in PORTAL_USERS.items():
+        if username == user_id:
+            return {
+                "id": username,
+                "username": username,
+                "password_hash": user["password_hash"],
+                "role": user["role"],
+                "active": user["active"],
+                "password_must_change": user["password_must_change"]
+            }
+    return None
 
 
 def get_user_for_login(username):
-    with db_connection() as connection:
-        return connection.execute(
-            """
-            SELECT id, username, password_hash, role, active, password_must_change
-            FROM portal_users
-            WHERE lower(username) = lower(?)
-            """,
-            (username,)
-        ).fetchone()
+    username = username.strip().lower()
+
+    user = PORTAL_USERS.get(username)
+
+    if not user:
+        return None
+
+    return {
+        "id": username,
+        "username": username,
+        "password_hash": user["password_hash"],
+        "role": user["role"],
+        "active": user["active"],
+        "password_must_change": user["password_must_change"]
+    }
 
 
 def login_attempt_key(username):
@@ -145,53 +108,17 @@ def login_attempt_key(username):
 
 
 def get_login_lock(username):
-    key = login_attempt_key(username)
-    now = int(time.time())
-
-    with db_connection() as connection:
-        attempt = connection.execute(
-            "SELECT fail_count, locked_until FROM login_attempts WHERE attempt_key = ?",
-            (key,)
-        ).fetchone()
-
-    if not attempt or attempt["locked_until"] <= now:
-        return 0
-
-    return attempt["locked_until"] - now
+    return 0
 
 
 def record_failed_login(username):
-    key = login_attempt_key(username)
-    now = int(time.time())
-
-    with db_connection() as connection:
-        attempt = connection.execute(
-            "SELECT fail_count FROM login_attempts WHERE attempt_key = ?",
-            (key,)
-        ).fetchone()
-        fail_count = (attempt["fail_count"] if attempt else 0) + 1
-        locked_until = now + LOGIN_LOCK_SECONDS if fail_count >= LOGIN_MAX_ATTEMPTS else 0
-        connection.execute(
-            """
-            INSERT INTO login_attempts (attempt_key, fail_count, locked_until, updated_at)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(attempt_key) DO UPDATE SET
-                fail_count = excluded.fail_count,
-                locked_until = excluded.locked_until,
-                updated_at = excluded.updated_at
-            """,
-            (key, fail_count, locked_until, now)
-        )
-        connection.commit()
+    # Login attempt tracking disabled
+    pass
 
 
 def clear_failed_logins(username):
-    with db_connection() as connection:
-        connection.execute(
-            "DELETE FROM login_attempts WHERE attempt_key = ?",
-            (login_attempt_key(username),)
-        )
-        connection.commit()
+    # Login attempt tracking disabled
+    pass
 
 
 def set_logged_in_user(user):
@@ -200,15 +127,8 @@ def set_logged_in_user(user):
     session["user_id"] = user["id"]
     session["username"] = user["username"]
     session["role"] = user["role"]
-    session["password_must_change"] = bool(user["password_must_change"])
+    session["password_must_change"] = user["password_must_change"]
     session["csrf_token"] = secrets.token_urlsafe(32)
-
-    with db_connection() as connection:
-        connection.execute(
-            "UPDATE portal_users SET last_login_at = ? WHERE id = ?",
-            (int(time.time()), user["id"])
-        )
-        connection.commit()
 
 
 def csrf_token():
@@ -268,7 +188,6 @@ def inject_auth_context():
 
 @app.before_request
 def require_login():
-    init_auth_db()
     g.current_user = None
 
     if request.endpoint in PUBLIC_ENDPOINTS:
@@ -305,7 +224,6 @@ def protect_post_forms():
         validate_csrf()
 
 
-init_auth_db()
 
 COMMON_TEMPLATE_FIELDS = [
     "action",
@@ -1067,129 +985,6 @@ def logout():
     session.clear()
     flash("Signed out successfully.", "success")
     return redirect(url_for("login"))
-
-
-@app.route("/users")
-@admin_required
-def users():
-    return render_template(
-        "users.html",
-        users=list_portal_users()
-    )
-
-
-@app.route("/users/create", methods=["POST"])
-@admin_required
-def create_user():
-    username = request.form.get("username", "").strip()
-    role = allowed_role_from_form()
-
-    if not username:
-        flash("Username is required.", "danger")
-        return redirect(url_for("users"))
-
-    password = random_password()
-    now = int(time.time())
-
-    try:
-        with db_connection() as connection:
-            connection.execute(
-                """
-                INSERT INTO portal_users (username, password_hash, role, active, created_at, updated_at)
-                VALUES (?, ?, ?, 1, ?, ?)
-                """,
-                (username, generate_password_hash(password), role, now, now)
-            )
-            connection.commit()
-    except sqlite3.IntegrityError:
-        flash("That username already exists.", "danger")
-        return redirect(url_for("users"))
-
-    flash(f"User {username} created. Temporary password: {password}", "success")
-    return redirect(url_for("users"))
-
-
-@app.route("/users/<int:user_id>/update", methods=["POST"])
-@admin_required
-def update_user(user_id):
-    target_user = get_user_by_id(user_id)
-
-    if not target_user:
-        abort(404)
-
-    if target_user["role"] == "superadmin":
-        flash("The superadmin account is protected.", "warning")
-        return redirect(url_for("users"))
-
-    active = 1 if request.form.get("active") == "1" else 0
-    role = target_user["role"]
-
-    if is_superadmin_user():
-        role = allowed_role_from_form(target_user["role"])
-
-    if target_user["id"] == g.current_user["id"] and not active:
-        flash("You cannot deactivate your own account.", "danger")
-        return redirect(url_for("users"))
-
-    with db_connection() as connection:
-        connection.execute(
-            "UPDATE portal_users SET role = ?, active = ?, updated_at = ? WHERE id = ?",
-            (role, active, int(time.time()), user_id)
-        )
-        connection.commit()
-
-    flash(f"User {target_user['username']} updated.", "success")
-    return redirect(url_for("users"))
-
-
-@app.route("/users/<int:user_id>/reset-password", methods=["POST"])
-@admin_required
-def reset_user_password(user_id):
-    target_user = get_user_by_id(user_id)
-
-    if not target_user:
-        abort(404)
-
-    if target_user["role"] == "superadmin" and not is_superadmin_user():
-        flash("Only a superadmin can reset the superadmin password.", "danger")
-        return redirect(url_for("users"))
-
-    reset_mode = request.form.get("reset_mode", "random")
-    password_must_change = 0
-
-    if reset_mode == "custom":
-        password = request.form.get("custom_password", "")
-        confirmation = request.form.get("confirm_password", "")
-        error = password_error(password, confirmation)
-
-        if error:
-            flash(error, "danger")
-            return redirect(url_for("users"))
-    elif reset_mode == "force_change":
-        password = random_password()
-        password_must_change = 1
-    else:
-        password = random_password()
-
-    with db_connection() as connection:
-        connection.execute(
-            """
-            UPDATE portal_users
-            SET password_hash = ?, password_must_change = ?, updated_at = ?
-            WHERE id = ?
-            """,
-            (generate_password_hash(password), password_must_change, int(time.time()), user_id)
-        )
-        connection.commit()
-
-    if reset_mode == "custom":
-        flash(f"Password updated for {target_user['username']}.", "success")
-    elif reset_mode == "force_change":
-        flash(f"Password reset for {target_user['username']}. Temporary password: {password}. User must change it at next sign-in.", "success")
-    else:
-        flash(f"Password reset for {target_user['username']}. New temporary password: {password}", "success")
-
-    return redirect(url_for("users"))
 
 
 @app.route("/")
