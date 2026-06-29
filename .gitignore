@@ -27,3 +27,7 @@ generated/
 # OS files
 .DS_Store
 Thumbs.db
+
+.portal_secret_key
+portal_users.db
+Test/
